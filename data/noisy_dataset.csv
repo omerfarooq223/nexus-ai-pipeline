@@ -1,0 +1,6 @@
+Timestamp, Query Text, Value, Extra Column
+2026-01-01 10:00:00, "  Hello world  ", 10, foo
+2026-01-01 10:00:00, "  Hello world  ", 10, foo
+2026-01-02 11:15:00, "Need status update", , bar
+invalid_date, "  Another query", 99999999999, baz
+2026-01-04 09:30:00, "", -5, qux
