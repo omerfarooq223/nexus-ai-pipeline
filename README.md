@@ -92,11 +92,20 @@ cp .env.example .env
 ### 4) Prepare database
 
 ```bash
-mysql -u root -p < schemas/schema.sql
+python scripts/sql_indexing.py
 ```
 
 This creates the `multimodal_ai` database, the `inference_results` table, and all indexes.
 The schema is safe to re-run; existing indexes are detected and skipped.
+
+Optional fallback (if you prefer running SQL directly):
+
+```bash
+set -a
+source .env
+set +a
+mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" < schemas/schema.sql
+```
 
 ---
 
@@ -105,7 +114,7 @@ The schema is safe to re-run; existing indexes are detected and skipped.
 Start the FastAPI server:
 
 ```bash
-uvicorn src.app:app --reload
+python -m uvicorn src.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 ### Endpoints
