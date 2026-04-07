@@ -62,6 +62,13 @@ def main() -> None:
     cleaned = clean_dataset(args.input, args.output)
     print(f"Rows after cleaning: {len(cleaned)}")
 
+    # Log recommended SQL indexes based on the cleaned columns
+    print("\n--- Recommended SQL Indexes ---")
+    # Recommend indexes for up to the first 3 columns as an example
+    statements = recommend_sql_indexes("processed_data_table", list(cleaned.columns[:3]))
+    for stmt in statements:
+        print(stmt)
+
 
 if __name__ == "__main__":
     main()

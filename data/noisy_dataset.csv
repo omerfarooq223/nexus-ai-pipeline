@@ -4,3 +4,32 @@ Timestamp, Query Text, Value, Extra Column
 2026-01-02 11:15:00, "Need status update", , bar
 invalid_date, "  Another query", 99999999999, baz
 2026-01-04 09:30:00, "", -5, qux
+2026-01-05 08:45:00, "   price check   ", 12.5, alpha
+2026-01-05 08:45:00, "   price check   ", 12.5, alpha
+2026-01-06 13:00:00, "Need STATUS update", 7, beta
+2026-01-07 14:20:00, "   mixed   spacing   ", 0, gamma
+2026-13-01 00:00:00, "bad month date", 15, delta
+, "missing timestamp row", 3, epsilon
+2026-01-09 16:10:00, "null-like text", NaN, zeta
+2026-01-10 12:12:12, "contains comma inside text", 41, eta
+2026-01-11 01:01:01, "tab\tinside", 2, theta
+2026-01-12 02:22:00, "leading and trailing   ", -0.0, iota
+2026-01-13 18:00:00, "unicode test cafe", 100, kappa
+2026-01-14 07:40:00, "value as sci", 1e3, lambda
+not_a_date, "another bad date", 25, mu
+2026-01-16 23:59:59, "empty extra", 11,
+2026-01-17 06:30:00, "   ", 9, nu
+2026-01-18 10:05:00, "caps lock QUERY", -999, xi
+2026-01-19 10:05:00, "caps lock QUERY", -999, xi
+2026-01-20 12:30:30, "quote test 'single'", 17.75, omicron
+2026-01-21 05:55:55, "text with slash / path", 1, pi
+2026-01-22 09:09:09, "text with numbers 12345", 12345, rho
+2026-01-23 04:04:04, "very large value", 9999999999999, sigma
+2026-01-24 15:15:15, "negative float", -42.42, tau
+2026-01-25 20:20:20, "trim me", 8, "  extra spaces  "
+2026-01-26 21:21:21, "duplicate candidate", 5, upsilon
+2026-01-26 21:21:21, "duplicate candidate", 5, upsilon
+2026-01-27 22:22:22, "blank value", , phi
+2026-01-28 23:23:23, "zero value", 0, chi
+2026-01-29 00:00:01, "mixed-case Query", 14, psi
+2026-01-30 11:11:11, "final noisy row", 6, omega

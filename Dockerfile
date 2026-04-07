@@ -21,6 +21,10 @@ RUN pip install --no-cache-dir -r requirements.txt \
 
 COPY . .
 
+RUN addgroup --system appgroup && adduser --system --group appuser \
+    && chown -R appuser:appgroup /app
+USER appuser
+
 EXPOSE 8000
 
-CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["gunicorn", "src.app:app", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]

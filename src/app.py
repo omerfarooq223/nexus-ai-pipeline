@@ -1,14 +1,32 @@
 """FastAPI application entrypoint."""
 
 from __future__ import annotations
+from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from src.db.mysql_client import MySQLClient
 from src.pipeline.multimodal_service import MultiModalService
 
-app = FastAPI(title="Multi-Modal AI Pipeline", version="1.0.0")
-service = MultiModalService()
+logger = logging.getLogger(__name__)
+
+service: MultiModalService | None = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global service
+    logger.info("Starting up: Initializing connection pool and pre-warming models...")
+    try:
+        MySQLClient.init_pool()
+        service = MultiModalService()
+        service.image_classifier._ensure_model_loaded()
+        logger.info("Startup complete: Models loaded and DB pooled.")
+    except Exception as e:
+        logger.error("Startup failed: %s", e)
+    yield
+
+app = FastAPI(title="Multi-Modal AI Pipeline", version="1.0.0", lifespan=lifespan)
 
 
 @app.get("/health")
@@ -21,6 +39,10 @@ def health() -> dict:
 @app.post("/infer")
 async def infer(image: UploadFile = File(...), query: str = Form(...)) -> dict:
     """Accept image and text query for combined inference."""
+    global service
+    if service is None:
+        raise HTTPException(status_code=503, detail="Service not fully initialized yet.")
+
     if not image.content_type or not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Uploaded file must be an image")
 
