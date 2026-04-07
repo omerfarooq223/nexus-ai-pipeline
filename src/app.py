@@ -24,6 +24,7 @@ async def lifespan(app: FastAPI):
         logger.info("Startup complete: Models loaded and DB pooled.")
     except Exception as e:
         logger.error("Startup failed: %s", e)
+        raise
     yield
 
 app = FastAPI(title="Multi-Modal AI Pipeline", version="1.0.0", lifespan=lifespan)
