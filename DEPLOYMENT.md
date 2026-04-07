@@ -361,19 +361,124 @@ Use spot instances for Fargate tasks (non-critical) to reduce cost by 60-70%.
 
 ### Option B: GCP
 
-- **Container registry**: Artifact Registry
-- **Orchestration**: Cloud Run or GKE
-- **Auto-scaling**: Cloud Run concurrency + min/max instances
-- **Database**: Cloud SQL (MySQL)
-- **Storage**: GCS
+#### GCP Workflow
+
+1. **Enable services and create Artifact Registry**
+
+```bash
+gcloud services enable artifactregistry.googleapis.com run.googleapis.com cloudbuild.googleapis.com sqladmin.googleapis.com monitoring.googleapis.com storage.googleapis.com
+gcloud artifacts repositories create multimodal-pipeline \
+  --repository-format=docker \
+  --location=us-central1
+gcloud auth configure-docker us-central1-docker.pkg.dev
+```
+
+2. **Build, tag, and push the container image**
+
+```bash
+docker build -t multimodal-pipeline:v1.0.0 .
+docker tag multimodal-pipeline:v1.0.0 us-central1-docker.pkg.dev/$PROJECT_ID/multimodal-pipeline/app:v1.0.0
+docker push us-central1-docker.pkg.dev/$PROJECT_ID/multimodal-pipeline/app:v1.0.0
+```
+
+3. **Deploy to Cloud Run with revision-based rollouts**
+
+```bash
+gcloud run deploy multimodal-pipeline \
+  --image us-central1-docker.pkg.dev/$PROJECT_ID/multimodal-pipeline/app:v1.0.0 \
+  --region us-central1 \
+  --platform managed \
+  --cpu 1 \
+  --memory 1Gi \
+  --min-instances 2 \
+  --max-instances 20 \
+  --concurrency 80 \
+  --set-env-vars MYSQL_HOST=<cloud-sql-ip>,MYSQL_PORT=3306,MYSQL_DATABASE=multimodal_ai
+```
+
+Cloud Run revisions give you built-in versioning. Use traffic splitting for canary releases and instant rollback:
+
+```bash
+gcloud run services update-traffic multimodal-pipeline \
+  --region us-central1 \
+  --to-revisions multimodal-pipeline-00012-abc=90,multimodal-pipeline-00013-def=10
+```
+
+4. **Provision Cloud SQL and versioned object storage**
+
+```bash
+gcloud sql instances create multimodal-mysql \
+  --database-version=MYSQL_8_0 \
+  --tier=db-f1-micro \
+  --region=us-central1
+gcloud sql databases create multimodal_ai --instance=multimodal-mysql
+gsutil mb -l us-central1 gs://multimodal-models-prod
+gsutil versioning set on gs://multimodal-models-prod
+```
+
+5. **Monitoring and alerting**
+
+- Cloud Monitoring dashboards for p95 latency, 5xx rate, CPU, and memory
+- Cloud Logging for request and model inference logs
+- Alerts on latency regression and elevated error rate
+- Store model artifacts by version in GCS and promote by updating the live revision
 
 ### Option C: Azure
 
-- **Container registry**: Azure Container Registry
-- **Orchestration**: Azure Container Apps or AKS
-- **Auto-scaling**: KEDA-based scale rules
-- **Database**: Azure Database for MySQL
-- **Storage**: Blob Storage
+#### Azure Workflow
+
+1. **Create Azure Container Registry and push the image**
+
+```bash
+az acr create --resource-group multimodal-rg --name multimodalpipelineacr --sku Basic
+az acr login --name multimodalpipelineacr
+docker build -t multimodalpipelineacr.azurecr.io/multimodal-pipeline:v1.0.0 .
+docker push multimodalpipelineacr.azurecr.io/multimodal-pipeline:v1.0.0
+```
+
+2. **Deploy to Azure Container Apps with autoscaling**
+
+```bash
+az containerapp create \
+  --resource-group multimodal-rg \
+  --name multimodal-pipeline \
+  --environment multimodal-env \
+  --image multimodalpipelineacr.azurecr.io/multimodal-pipeline:v1.0.0 \
+  --registry-server multimodalpipelineacr.azurecr.io \
+  --min-replicas 2 \
+  --max-replicas 20 \
+  --cpu 1.0 \
+  --memory 2Gi \
+  --secrets mysql-user=<user> mysql-password=<password>
+```
+
+Azure Container Apps supports revision-based deployments. Use traffic splitting for canary releases and rollback.
+
+3. **Provision MySQL and Blob Storage versioning**
+
+```bash
+az mysql flexible-server create \
+  --resource-group multimodal-rg \
+  --name multimodal-mysql \
+  --location eastus \
+  --admin-user adminuser \
+  --admin-password '<strong-password>' \
+  --sku-name Standard_B1ms
+az storage account create \
+  --resource-group multimodal-rg \
+  --name multimodalstorageprod \
+  --location eastus \
+  --sku Standard_LRS
+```
+
+Enable blob versioning and use a separate container for model artifacts so each release can be traced and rolled back.
+
+4. **Monitoring and observability**
+
+- Application Insights for request latency and failures
+- Log Analytics workspace for container logs
+- Azure Monitor alerts for CPU, memory, and 5xx spikes
+- Track model version, preprocessing version, and rollout revision in inference logs
 
 ## 3) Model Versioning Strategy
 
