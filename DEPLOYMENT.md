@@ -59,8 +59,17 @@ Use semantic model version tags and a model registry pattern:
 Serve-time traceability requirements:
 
 - Include `model_name`, `model_version`, and `feature_pipeline_version` in every inference log row.
-- Keep a "live model pointer" config (for example in Parameter Store/ConfigMap) so rollback is a pointer flip, not a full redeploy.
+- Don't keep v1.0 and v2.0 running simultaneously (wastes memory).
+   Instead: Store both in S3, use "live pointer" config.
+   Update pointer → Kubernetes reloads weights → rollback complete..
 - Block promotion unless candidate metrics beat baseline thresholds defined in CI.
+
+### Preprocessing & Model Version Compatibility
+   
+   Preprocessing (tokenizer, image transforms) must be tracked alongside model versions:
+   - Model v2.0 trained with spaCy v3.0
+   - Old requests using spaCy v2.3 tokenizer → garbage predictions
+   - Solution: Deploy as (model_version, preprocess_version) pair
 
 Promotion workflow:
 
@@ -88,6 +97,13 @@ Minimum rollback conditions (example):
 - Candidate p95 latency is more than 20% worse than baseline.
 - Candidate error rate is more than 1.5x baseline.
 - Confidence drift or class-distribution drift exceeds agreed control limits.
+
+### Cold Start Mitigation
+   
+   Model loading (400MB total) slows new container startup:
+   - Use pod readiness probes (initialDelaySeconds: 30)
+   - Pre-warm models on startup
+   - Keep minimum 2 replicas always ready
 
 ## 5) Monitoring and Observability
 
