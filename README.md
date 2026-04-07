@@ -34,13 +34,14 @@ End-to-end implementation of all four Project Nexus assessment challenges:
 ├── scripts/
 │   ├── run_sentiment_comparison.py     # Challenge 2 runner (requires TensorFlow)
 │   ├── run_comparison_standalone.py    # Challenge 2 runner (PyTorch-only)
-│   └── run_ingestion.py               # Challenge 4 runner
+│   ├── run_ingestion.py                # Challenge 4 runner
+│   └── sql_indexing.py                 # Standalone MySQL schema/index bootstrapper
 ├── tests/
 │   ├── conftest.py                    # Pytest import bootstrap
 │   ├── test_ingestion.py              # Ingestion and SQL index tests
 │   └── test_mysql_client.py           # MySQL helper test
 ├── data/
-│   ├── sample_reviews.csv              # 30 labeled reviews (positive/neutral/negative)
+│   ├── sample_reviews.csv              # 300 labeled reviews (positive/neutral/negative)
 │   ├── noisy_dataset.csv               # Dirty dataset for ingestion testing
 │   └── processed/                      # Cleaned output (gitignored)
 ├── schemas/
@@ -161,7 +162,11 @@ Build and run the containerized service:
 
 ```bash
 docker build -t multimodal-mlops-pipeline:latest .
-docker run --rm -p 8000:8000 --env-file .env multimodal-mlops-pipeline:latest
+docker run --rm -p 8000:8000 \
+  --add-host=host.docker.internal:host-gateway \
+  -e MYSQL_HOST=host.docker.internal \
+  --env-file .env \
+  multimodal-mlops-pipeline:latest
 ```
 
 **Cloud migration strategies** (AWS, GCP, Azure) with auto-scaling, model versioning, monitoring, and canary deployment → see [`DEPLOYMENT.md`](DEPLOYMENT.md)
@@ -192,7 +197,7 @@ The pipeline handles:
 
 ### SQL Indexing Strategy
 
-Defined in [`schemas/schema.sql`](schemas/schema.sql) with four indexes targeting high-value query patterns:
+Defined in [`schemas/schema.sql`](schemas/schema.sql) and [`scripts/sql_indexing.py`](scripts/sql_indexing.py) with four indexes targeting high-value query patterns:
 
 | Index | Column | Rationale |
 |---|---|---|
