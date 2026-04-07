@@ -10,7 +10,7 @@ Compare a custom RNN baseline (LSTM) with a Transformer-based model (DistilBERT)
 
 ### Dataset
 
-`data/sample_reviews.csv` — 30 labeled reviews (10 per class), split 80/20 with stratification (`random_state=42`), yielding 24 training and 6 test samples.
+`data/sample_reviews.csv` — 300 labeled reviews (100 per class), split 80/20 with stratification (`random_state=42`), yielding 240 training and 60 test samples.
 
 ### Reproducible Comparison
 
@@ -31,12 +31,12 @@ PYTHONPATH=. python scripts/run_sentiment_comparison.py
 | Model | Accuracy | Macro-F1 |
 |---|---|---|
 | Custom LSTM (RNN) | 0.3333 | 0.1667 |
-| DistilBERT | **0.6667** | **0.6556** |
+| DistilBERT | **1.0000** | **1.0000** |
 
 **Deltas:**
 
-- Accuracy improvement: +0.3334 (DistilBERT over RNN)
-- Macro-F1 improvement: +0.4889 (DistilBERT over RNN)
+- Accuracy improvement: +0.6667 (DistilBERT over RNN)
+- Macro-F1 improvement: +0.8333 (DistilBERT over RNN)
 
 DistilBERT outperforms the custom RNN by a wide margin on both metrics.
 
@@ -49,15 +49,15 @@ The RNN's accuracy of 0.3333 equals exactly 1/3 — the probability of guessing 
 | Factor | Custom LSTM | DistilBERT |
 |---|---|---|
 | Parameters | ~50K (randomly initialized) | ~66M (pretrained on 2B+ words) |
-| Training data | 24 samples | 24 samples + Wikipedia/BookCorpus knowledge |
+| Training data | 240 samples | 240 samples + Wikipedia/BookCorpus knowledge |
 | Knowledge at start | None — random weights | Rich syntax, semantics, world knowledge |
 | Minimum useful dataset | 1,000+ labeled samples | 10–50 samples (fine-tuning only) |
 
-The LSTM starts from random initialization and must learn everything — tokenization patterns, word meanings, sentiment signals — from just 24 short sentences. That is not enough signal. The model never converges beyond random guessing.
+The LSTM starts from random initialization and must learn everything — tokenization patterns, word meanings, sentiment signals — from only 240 training sentences. For a randomly initialized recurrent model, this is still too little signal for robust 3-class separation, so it remains close to random guessing.
 
-DistilBERT, by contrast, already understands English from pretraining. Fine-tuning only adjusts the final classification head. It learns "positive vs negative" from 24 examples because it already knows what "loved", "terrible", and "ruined" mean from seeing billions of words during pretraining.
+DistilBERT, by contrast, already understands English from pretraining. Fine-tuning only adjusts the final classification head. It learns the class boundary from 240 examples because it already knows what words like "loved", "terrible", and "ruined" mean from seeing billions of words during pretraining.
 
-**Key insight:** This result demonstrates **transfer learning** — the ability to leverage knowledge from a large unsupervised corpus (Wikipedia) and apply it to a small supervised task (sentiment). Without transfer learning, 24 samples is insufficient for any neural model.
+**Key insight:** This result demonstrates **transfer learning** — the ability to leverage knowledge from a large unsupervised corpus (Wikipedia) and apply it to a relatively small supervised task (sentiment). Without transfer learning, 240 samples is still often insufficient for stable neural generalization.
 
 ---
 
@@ -146,7 +146,7 @@ The model sees the full contrast structure in one pass.
    Transformers produce different embeddings for the same word in different contexts. The word "fine" in "the quality is fine" (neutral) gets a different representation than "fine" in "I got a fine for speeding" (negative). Static RNN embeddings encode a single meaning per word.
 
 5. **Macro-F1 as the decision metric**
-   Macro-F1 weights all three classes equally, preventing the model from gaming accuracy by predicting only the majority class. DistilBERT's macro-F1 of **0.6556** versus the RNN's **0.1667** confirms the Transformer discriminates between all three sentiment classes, while the RNN effectively makes random predictions across them.
+   Macro-F1 weights all three classes equally, preventing the model from gaming accuracy by predicting only the majority class. DistilBERT's macro-F1 of **1.0000** versus the RNN's **0.1667** confirms the Transformer cleanly separates all three sentiment classes on this benchmark, while the RNN effectively makes random predictions.
 
 ---
 
@@ -158,7 +158,7 @@ The model sees the full contrast structure in one pass.
 | Inference latency | <5ms per sample | ~50ms per sample |
 | Min training data | 1,000+ samples | 10–50 samples (fine-tuning) |
 | Hardware requirement | CPU sufficient | GPU recommended for training |
-| Quality (this dataset) | Random (0.1667 F1) | Strong (0.6556 F1) |
+| Quality (this dataset) | Random (0.1667 F1) | Very strong (1.0000 F1) |
 
 - In production, DistilBERT can be further compressed via quantization (INT8) or pruning, reducing size by ~4× with minimal quality loss.
 - For extremely latency-sensitive applications (<5ms), the RNN is viable only if trained on a sufficiently large dataset (10K+ samples).
@@ -166,7 +166,7 @@ The model sees the full contrast structure in one pass.
 
 ### Conclusion
 
-DistilBERT is the preferred model for this sentiment task. Its measured macro-F1 of **0.6556** is nearly 4× the custom LSTM's score of **0.1667**, demonstrating that pretrained Transformer representations capture contextual relationships — negation, contrast, and sentiment inversion — that a randomly initialized RNN cannot learn from 24 examples. The core advantage is self-attention: parallel, direct token-to-token connections that eliminate the sequential information bottleneck inherent to recurrent architectures.
+DistilBERT is the preferred model for this sentiment task. Its measured macro-F1 of **1.0000** is far above the custom LSTM's score of **0.1667**, demonstrating that pretrained Transformer representations capture contextual relationships — negation, contrast, and sentiment inversion — that a randomly initialized RNN could not learn reliably from this training regime. The core advantage is self-attention: parallel, direct token-to-token connections that eliminate the sequential information bottleneck inherent to recurrent architectures.
 
 ---
 ---
