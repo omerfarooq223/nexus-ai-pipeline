@@ -6,6 +6,9 @@ since both use Embedding -> LSTM -> Dense with random initialization.
 """
 
 import json
+import os
+
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 import numpy as np
 import pandas as pd
@@ -14,6 +17,9 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
+from transformers.utils import logging as hf_logging
+
+hf_logging.set_verbosity_error()
 from transformers import (
     DistilBertForSequenceClassification,
     DistilBertTokenizerFast,
@@ -100,7 +106,10 @@ class TextDataset(Dataset):
 
 
 def train_distilbert(x_train_texts, y_train, x_test_texts, y_test):
-    tokenizer = DistilBertTokenizerFast.from_pretrained("distilbert-base-uncased")
+    tokenizer = DistilBertTokenizerFast.from_pretrained(
+        "distilbert-base-uncased",
+        clean_up_tokenization_spaces=False,
+    )
     model = DistilBertForSequenceClassification.from_pretrained(
         "distilbert-base-uncased", num_labels=3
     )

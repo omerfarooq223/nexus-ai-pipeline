@@ -134,3 +134,13 @@ class MySQLClient:
                 cursor.close()
             if conn is not None and conn.is_connected():
                 conn.close()
+
+
+def init_db() -> Dict[str, Any]:
+    """Backward-compatible DB initializer used by ad-hoc CLI checks.
+
+    Initializes the connection pool and returns a lightweight health payload.
+    """
+    MySQLClient.init_pool()
+    client = MySQLClient()
+    return client.healthcheck()

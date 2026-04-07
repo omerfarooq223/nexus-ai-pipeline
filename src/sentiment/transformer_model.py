@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
+
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score
@@ -45,7 +48,10 @@ class DistilBERTSentiment:
     """Hugging Face DistilBERT fine-tuning wrapper."""
 
     def __init__(self, model_name: str = "distilbert-base-uncased") -> None:
-        self.tokenizer = DistilBertTokenizerFast.from_pretrained(model_name)
+        self.tokenizer = DistilBertTokenizerFast.from_pretrained(
+            model_name,
+            clean_up_tokenization_spaces=False,
+        )
         self.model = DistilBertForSequenceClassification.from_pretrained(
             model_name,
             num_labels=3,
@@ -77,12 +83,12 @@ class DistilBERTSentiment:
             num_train_epochs=5,
             per_device_train_batch_size=4,
             per_device_eval_batch_size=8,
-            evaluation_strategy="epoch",
+            eval_strategy="epoch",
             save_strategy="no",
             logging_steps=10,
             report_to="none",
-            learning_rate=2e-5,  
-            warmup_steps=0,  
+            learning_rate=2e-5,
+            warmup_steps=0,
         )
 
         trainer = Trainer(

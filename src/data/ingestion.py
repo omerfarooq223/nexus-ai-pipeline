@@ -15,6 +15,7 @@ def clean_dataset(input_path: str, output_path: str) -> pd.DataFrame:
 
     df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
     df = df.replace([np.inf, -np.inf], np.nan)
+    df = df.dropna(how="all")
 
     if "timestamp" in df.columns:
         df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
@@ -24,7 +25,6 @@ def clean_dataset(input_path: str, output_path: str) -> pd.DataFrame:
         df[col] = df[col].astype(str).str.strip()
 
     df = df.drop_duplicates()
-    df = df.dropna(how="all")
 
     numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
     for col in numeric_cols:

@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Dict, Any
+
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+os.environ.setdefault("GLOG_minloglevel", "2")
 
 import cv2
 import mediapipe as mp

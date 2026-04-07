@@ -35,6 +35,10 @@ End-to-end implementation of all four Project Nexus assessment challenges:
 │   ├── run_sentiment_comparison.py     # Challenge 2 runner (requires TensorFlow)
 │   ├── run_comparison_standalone.py    # Challenge 2 runner (PyTorch-only)
 │   └── run_ingestion.py               # Challenge 4 runner
+├── tests/
+│   ├── conftest.py                    # Pytest import bootstrap
+│   ├── test_ingestion.py              # Ingestion and SQL index tests
+│   └── test_mysql_client.py           # MySQL helper test
 ├── data/
 │   ├── sample_reviews.csv              # 30 labeled reviews (positive/neutral/negative)
 │   ├── noisy_dataset.csv               # Dirty dataset for ingestion testing
@@ -71,6 +75,12 @@ pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 ```
 
+Optional test tooling:
+
+```bash
+pytest
+```
+
 ### 3) Configure environment
 
 ```bash
@@ -85,6 +95,7 @@ mysql -u root -p < schemas/schema.sql
 ```
 
 This creates the `multimodal_ai` database, the `inference_results` table, and all indexes.
+The schema is safe to re-run; existing indexes are detected and skipped.
 
 ---
 
@@ -136,11 +147,15 @@ python scripts/run_sentiment_comparison.py
 
 Both scripts train a **custom LSTM** (random initialization) and fine-tune **DistilBERT** on `data/sample_reviews.csv`, then output accuracy and macro-F1 for each.
 
+Note: the message about some DistilBERT classifier weights being newly initialized is expected during fine-tuning and is not an error.
+
 **Measured results and analysis** → see [`REPORT.md`](REPORT.md)
 
 ---
 
 ## Challenge 3 — Docker & Cloud Deployment
+
+Prerequisite: install Docker Desktop (or another compatible Docker engine) so the `docker` CLI is available.
 
 Build and run the containerized service:
 

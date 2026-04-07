@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 import logging
 from typing import Optional
+
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 
 import cv2
 import numpy as np

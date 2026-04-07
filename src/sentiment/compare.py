@@ -3,12 +3,17 @@
 from __future__ import annotations
 
 import random
+import os
 import numpy as np
 import torch
 from pathlib import Path
-from pathlib import Path
+
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 import pandas as pd
+from transformers.utils import logging as hf_logging
+
+hf_logging.set_verbosity_error()
 
 from src.sentiment.rnn_baseline import RNNSentimentBaseline
 from src.sentiment.transformer_model import DistilBERTSentiment
