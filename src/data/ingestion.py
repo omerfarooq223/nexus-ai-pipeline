@@ -47,8 +47,16 @@ def recommend_sql_indexes(table_name: str, columns: list[str]) -> list[str]:
 def main() -> None:
     """CLI for dataset ingestion."""
     parser = argparse.ArgumentParser(description="Clean and optimize dataset")
-    parser.add_argument("--input", required=True, help="Input CSV path")
-    parser.add_argument("--output", required=True, help="Output parquet path")
+    parser.add_argument(
+        "--input",
+        default="data/noisy_dataset.csv",
+        help="Input CSV path (default: data/noisy_dataset.csv)",
+    )
+    parser.add_argument(
+        "--output",
+        default="data/processed/cleaned_dataset.parquet",
+        help="Output parquet path (default: data/processed/cleaned_dataset.parquet)",
+    )
     args = parser.parse_args()
 
     cleaned = clean_dataset(args.input, args.output)

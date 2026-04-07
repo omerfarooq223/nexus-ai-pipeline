@@ -74,13 +74,15 @@ class DistilBERTSentiment:
 
         args = TrainingArguments(
             output_dir=output_dir,
-            num_train_epochs=1,
-            per_device_train_batch_size=8,
+            num_train_epochs=5,
+            per_device_train_batch_size=4,
             per_device_eval_batch_size=8,
             evaluation_strategy="epoch",
             save_strategy="no",
             logging_steps=10,
             report_to="none",
+            learning_rate=2e-5,  
+            warmup_steps=0,  
         )
 
         trainer = Trainer(

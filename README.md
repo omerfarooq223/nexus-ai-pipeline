@@ -45,16 +45,22 @@ End-to-end implementation of all four Project Nexus assessment challenges:
 ├── REPORT.md                           # Challenge 2 results + Challenge 4 scaling strategy
 ├── DEPLOYMENT.md                       # AWS, GCP, Azure migration playbook
 ├── requirements.txt                    # Python dependencies
+├── .python-version                     # Project Python interpreter pin (3.11)
 ├── .env.example                        # Environment variable template
 └── .gitignore
 ```
 
 ## Setup
 
+Python version:
+
+- Full stack (including TensorFlow/Keras baseline): Python 3.11
+- Python 3.12+ can run non-TensorFlow flows (for example `run_comparison_standalone.py`)
+
 ### 1) Create virtual environment
 
 ```bash
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 ```
 
@@ -125,7 +131,7 @@ python scripts/run_comparison_standalone.py
 Or if TensorFlow is installed:
 
 ```bash
-PYTHONPATH=. python scripts/run_sentiment_comparison.py
+python scripts/run_sentiment_comparison.py
 ```
 
 Both scripts train a **custom LSTM** (random initialization) and fine-tune **DistilBERT** on `data/sample_reviews.csv`, then output accuracy and macro-F1 for each.

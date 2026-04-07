@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
+import random
+import numpy as np
+import torch
+from pathlib import Path
+from pathlib import Path
+
 import pandas as pd
 
 from src.sentiment.rnn_baseline import RNNSentimentBaseline
 from src.sentiment.transformer_model import DistilBERTSentiment
+
+random.seed(42)
+np.random.seed(42)
+torch.manual_seed(42)
 
 
 LABEL_MAP = {
@@ -14,10 +24,12 @@ LABEL_MAP = {
     "positive": 2,
 }
 
+DEFAULT_DATASET_PATH = Path(__file__).resolve().parents[2] / "data" / "sample_reviews.csv"
 
-def run_comparison(dataset_path: str = "data/sample_reviews.csv") -> dict:
+
+def run_comparison(dataset_path: str | Path = DEFAULT_DATASET_PATH) -> dict:
     """Train/evaluate both models and return metric summary."""
-    df = pd.read_csv(dataset_path)
+    df = pd.read_csv(Path(dataset_path))
     texts = df["text"].astype(str).tolist()
     labels = df["label"].map(LABEL_MAP).tolist()
 
