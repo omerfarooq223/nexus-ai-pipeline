@@ -67,6 +67,10 @@ Python version:
 - Full stack (including TensorFlow/Keras baseline): Python 3.11
 - Python 3.12+ can run non-TensorFlow flows (for example `run_comparison_standalone.py`)
 
+## Code Quality
+
+The codebase follows PEP 8-style conventions and has been validated with Ruff for consistent formatting and linting.
+
 ### 1) Create virtual environment
 
 ```bash
@@ -231,3 +235,5 @@ Defined in [`schemas/schema.sql`](schemas/schema.sql) and [`scripts/sql_indexing
 | [`REPORT.md`](REPORT.md) | Transformer vs RNN comparison results + 1GB→1TB scaling strategy |
 | [`DEPLOYMENT.md`](DEPLOYMENT.md) | AWS, GCP, Azure deployment with auto-scaling, versioning, monitoring |
 | [`schemas/schema.sql`](schemas/schema.sql) | Database schema + index definitions |
+
+Author: Muhammad Umer Farooq

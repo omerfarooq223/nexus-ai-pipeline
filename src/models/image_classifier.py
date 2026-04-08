@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 import logging
-from typing import Optional
+from typing import Any
 
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 
@@ -33,7 +33,7 @@ class ImageClassifier:
     """MobileNetV2 classifier wrapper."""
 
     def __init__(self) -> None:
-        self.model: Optional[MobileNetV2] = None
+        self.model: Any | None = None
         self._model_loaded = False
 
     def _ensure_model_loaded(self) -> None:

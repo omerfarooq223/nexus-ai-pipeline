@@ -10,10 +10,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import mysql.connector
-from mysql.connector import Error
-
-from src.config import settings
+import mysql.connector  # noqa: E402
+from mysql.connector import Error  # noqa: E402
 
 
 TABLE_NAME = "inference_results"
@@ -37,7 +35,7 @@ INDEX_QUERIES = [
 ]
 
 
-def connect(database: str | None = None):
+def connect(settings, database: str | None = None):
     """Open a MySQL connection using project settings."""
     connection_kwargs = {
         "host": settings.mysql_host,
@@ -50,12 +48,12 @@ def connect(database: str | None = None):
     return mysql.connector.connect(**connection_kwargs)
 
 
-def ensure_database() -> None:
+def ensure_database(settings) -> None:
     """Create the target database if it does not exist."""
     conn = None
     cursor = None
     try:
-        conn = connect()
+        conn = connect(settings)
         cursor = conn.cursor()
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{settings.mysql_database}`")
         conn.commit()
@@ -66,12 +64,12 @@ def ensure_database() -> None:
             conn.close()
 
 
-def ensure_table() -> None:
+def ensure_table(settings) -> None:
     """Create the inference table with the expected columns."""
     conn = None
     cursor = None
     try:
-        conn = connect(settings.mysql_database)
+        conn = connect(settings, settings.mysql_database)
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -99,12 +97,12 @@ def ensure_table() -> None:
             conn.close()
 
 
-def ensure_index(index_name: str, create_sql: str) -> None:
+def ensure_index(settings, index_name: str, create_sql: str) -> None:
     """Create an index only when it is missing."""
     conn = None
     cursor = None
     try:
-        conn = connect(settings.mysql_database)
+        conn = connect(settings, settings.mysql_database)
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -130,10 +128,12 @@ def ensure_index(index_name: str, create_sql: str) -> None:
 def main() -> None:
     """Bootstrap the database schema and indexes."""
     try:
-        ensure_database()
-        ensure_table()
+        from src.config import settings
+
+        ensure_database(settings)
+        ensure_table(settings)
         for index_name, create_sql in INDEX_QUERIES:
-            ensure_index(index_name, create_sql)
+            ensure_index(settings, index_name, create_sql)
     except Error as exc:
         raise SystemExit(f"Failed to bootstrap schema or indexes: {exc}") from exc
 

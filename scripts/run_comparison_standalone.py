@@ -14,18 +14,18 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
 from transformers.utils import logging as hf_logging
-
-hf_logging.set_verbosity_error()
 from transformers import (
     DistilBertForSequenceClassification,
     DistilBertTokenizerFast,
     Trainer,
     TrainingArguments,
 )
+
+hf_logging.set_verbosity_error()
 
 LABEL_MAP = {"negative": 0, "neutral": 1, "positive": 2}
 DATASET_PATH = "data/sample_reviews.csv"
