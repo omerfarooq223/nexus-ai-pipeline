@@ -2,24 +2,33 @@
 
 from __future__ import annotations
 from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator
 import logging
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 
 from src.db.mysql_client import MySQLClient
 from src.pipeline.multimodal_service import MultiModalService
 
 logger = logging.getLogger(__name__)
 
-service: MultiModalService | None = None
+
+def _get_service(request: Request) -> MultiModalService:
+    """Return the shared multimodal service instance."""
+    service = getattr(request.app.state, "service", None)
+    if service is None:
+        raise HTTPException(status_code=503, detail="Service not fully initialized yet.")
+    return service
+
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    global service
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Initialize shared resources at application startup."""
     logger.info("Starting up: Initializing connection pool and pre-warming models...")
     try:
         MySQLClient.init_pool()
-        service = MultiModalService()
+        app.state.service = MultiModalService()
+        service = app.state.service
         service.image_classifier._ensure_model_loaded()
         logger.info("Startup complete: Models loaded and DB pooled.")
     except Exception as e:
@@ -38,11 +47,9 @@ def health() -> dict:
 
 
 @app.post("/infer")
-async def infer(image: UploadFile = File(...), query: str = Form(...)) -> dict:
+async def infer(request: Request, image: UploadFile = File(...), query: str = Form(...)) -> dict:
     """Accept image and text query for combined inference."""
-    global service
-    if service is None:
-        raise HTTPException(status_code=503, detail="Service not fully initialized yet.")
+    service = _get_service(request)
 
     if not image.content_type or not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Uploaded file must be an image")

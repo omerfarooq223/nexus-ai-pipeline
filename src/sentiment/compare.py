@@ -11,12 +11,11 @@ from pathlib import Path
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 import pandas as pd
+from src.sentiment.rnn_baseline import RNNSentimentBaseline
+from src.sentiment.transformer_model import DistilBERTSentiment
 from transformers.utils import logging as hf_logging
 
 hf_logging.set_verbosity_error()
-
-from src.sentiment.rnn_baseline import RNNSentimentBaseline
-from src.sentiment.transformer_model import DistilBERTSentiment
 
 random.seed(42)
 np.random.seed(42)
