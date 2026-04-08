@@ -11,7 +11,7 @@ End-to-end implementation of all four Project Nexus assessment challenges:
 
 ## Interface
 
-![Multi-Modal Pipeline UI](artifacts/ui_screenshot.png)
+![Multi-Modal Pipeline UI](ui_screenshot.png)
 
 ## Project Structure
 
@@ -56,6 +56,7 @@ End-to-end implementation of all four Project Nexus assessment challenges:
 ├── requirements.txt                    # Python dependencies
 ├── .python-version                     # Project Python interpreter pin (3.11)
 ├── .env.example                        # Environment variable template
+├── ui_screenshot.png                   # Screenshot of the UI
 └── .gitignore
 ```
 
