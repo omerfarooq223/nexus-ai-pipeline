@@ -9,6 +9,10 @@ End-to-end implementation of all four Project Nexus assessment challenges:
 | 3. Production-Grade MLOps Simulation | 20% | Docker, AWS/GCP/Azure deployment strategies |
 | 4. Data Engineering for Scale | 30% | Pandas, NumPy, SQL indexing, Parquet |
 
+## Interface
+
+![Multi-Modal Pipeline UI](artifacts/ui_screenshot.png)
+
 ## Project Structure
 
 ```
